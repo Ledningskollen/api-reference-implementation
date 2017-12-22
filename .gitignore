@@ -1,0 +1,16 @@
+
+bin/
+obj/
+.vs/
+*.project
+*.cd
+*.user
+*.suo
+
+*.DS_Store
+*.patch
+*.swp
+
+packages/
+
+TestV4/app.config
