@@ -3,6 +3,48 @@ using System.ComponentModel;
 
 namespace ApiClient.Helper {
     public static class Constants {
+        public enum AreaType {
+            [Description("affected")]
+            AFFECTED,
+
+            [Description("control")]
+            CONTROL
+        }
+
+        public enum Case_Status {
+            [Description("toconfirm")]
+            TO_CONFIRM,
+
+            [Description("confirmed")]
+            CONFIRMED,
+
+            [Description("canceled")]
+            CANCELED,
+
+            [Description("taken")]
+            TAKEN,
+
+            [Description("historical")]
+            HISTORICAL
+        }
+
+        public enum PurposeEnum {
+            [Description("cable indication")]
+            CABLE_INDICATION, // Ledningsanvisning
+
+            [Description("project")]
+            PROJECT, // Projektering
+
+            [Description("collaboration")]
+            COLLABORATE, // Samordning
+
+            [Description("planning")]
+            PLANNING, // Samhällsplanering
+
+            [Description("emergency")]
+            EMERGENCY // Akut
+        }
+
         public const string CABLE_INQUIRY_PURPOSE = "cable indication";
         public const string COLLABORATION_INQUIRY_PURPOSE = "collaboration";
         public const string EMERGENCY_INQUIRY_PURPOSE = "emergency";
@@ -10,50 +52,15 @@ namespace ApiClient.Helper {
         public const string PROJECT_INQUIRY_PURPOSE = "project";
 
         public const string CONTACT_WAY_EMAIL = "email";
-        //public const string CONTACT_WAY_PHONE = "mobilephone";
+
+        public const string CONTACT_WAY_PHONE = "mobilephone";
         public const string CONTACT_WAY_ADDRESS = "postal address";
+
         public const string CONTACT_WAY_FAX = "fax";
         public const string CLOSING_CASE_COMMENT = "Testing with some comments!";
 
-        public enum Case_Status {
-            [Description("toconfirm")]
-            TO_CONFIRM,
-            [Description("confirmed")]
-            CONFIRMED,
-            [Description("canceled")]
-            CANCELED,
-            [Description("taken")]
-            TAKEN,
-            [Description("historical")]
-            HISTORICAL,
-        }
-
-        public enum AreaType {
-            [Description("affected")]
-            AFFECTED,
-            [Description("control")]
-            CONTROL,
-        }
-
-        public enum PurposeEnum {
-            [Description("cable indication")]
-            CABLE_INDICATION,  // Ledningsanvisning
-
-            [Description("project")]
-            PROJECT,           // Projektering
-
-            [Description("collaboration")]
-            COLLABORATE,       // Samordning
-
-            [Description("planning")]
-            PLANNING,          // Samhällsplanering
-
-            [Description("emergency")]
-            EMERGENCY          // Akut
-        }
-
         /// <summary>
-        /// This represents the work methods per purpose
+        ///     This represents the work methods per purpose
         /// </summary>
         public static readonly IDictionary<string, IList<string>>
             MeasuresPerCaseType =
@@ -63,13 +70,13 @@ namespace ApiClient.Helper {
                             "no interest",
                             "sent material",
                             "visit will occur",
-                            "initialized by us",
+                            "initialized by us"
                         }
                     }, {
                         "project", new List<string> {
                             "no interest",
                             "sent material",
-                            "initialized by us",
+                            "initialized by us"
                         }
                     }, {
                         "planning", new List<string> {
@@ -77,13 +84,13 @@ namespace ApiClient.Helper {
                             "no infrastructure",
                             "follow up",
                             "not follow up",
-                            "no planning case",
+                            "no planning case"
                         }
                     }, {
                         "collaboration", new List<string> {
                             "interested to collaborate",
                             "not interested to collaborate",
-                            "not collaboration case",
+                            "not collaboration case"
                         }
                     }, {
                         "emergency", new List<string> {
@@ -97,7 +104,7 @@ namespace ApiClient.Helper {
                 };
 
         /// <summary>
-        /// Provides possible reasons for case cancellation
+        ///     Provides possible reasons for case cancellation
         /// </summary>
         public static List<string> GetCancelCaseReason(string type) {
             type = type.ToLower();
@@ -106,7 +113,7 @@ namespace ApiClient.Helper {
                     "not_emergency_case",
                     "incorrect_information",
                     "duplicate",
-                    "work_is_suspended",
+                    "work_is_suspended"
                 };
             }
             return new List<string> {

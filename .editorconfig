@@ -10,3 +10,14 @@ insert_final_newline = true
 
 [*.md]
 trim_trailing_whitespace = false
+
+[*.cs]
+csharp_type_declaration_braces = end_of_line
+csharp_invocable_declaration_braces = end_of_line
+csharp_brace_style = end_of_line
+csharp_case_block_braces = end_of_line
+csharp_other_braces = end_of_line
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
+csharp_max_line_length = 120

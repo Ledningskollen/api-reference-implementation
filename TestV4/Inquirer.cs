@@ -17,22 +17,6 @@ using GlobalSettings = ApiClient.Helper.GlobalSettings;
 namespace TestV4 {
     [TestFixture]
     public class Inquirer {
-
-        private static Context _context;
-        private static string CaseNumber { get; set; }
-
-        private enum ResultType {
-            Before,
-            After
-        }
-
-        private enum StatusType {
-            Confirmed,
-            Open,
-            Canceled,
-            Closed
-        }
-
         [SetUp]
         public void Init() {
             // LOGIN
@@ -50,14 +34,26 @@ namespace TestV4 {
         [TearDown]
         public void Dispose() {
             Authentication.Logout(_context).Wait();
-
             Assert.IsTrue(string.IsNullOrWhiteSpace(_context.Token));
         }
 
-        private async Task<List<InquirerCase>> GetMyInquiries(
-            StatusType? status = null, ResultType? filter = null,
-            string caseNumber = "", int limit = 100) {
+        private static Context _context;
+        private static string CaseNumber { get; set; }
 
+        private enum ResultType {
+            Before,
+            After
+        }
+
+        private enum StatusType {
+            Confirmed,
+            Open,
+            Canceled,
+            Closed
+        }
+
+        private async Task<List<InquirerCase>> GetMyInquiries(StatusType? status = null, ResultType? filter = null,
+            string caseNumber = "", int limit = 100) {
             List<InquirerCase> result;
             using (var client = new HttpClient()) {
                 //Set timeout to 20 seconds
@@ -69,10 +65,9 @@ namespace TestV4 {
                 client.DefaultRequestHeaders.Add("X-Auth-Token", _context.Token);
 
                 var url = "/" + limit;
-                if (!string.IsNullOrEmpty(caseNumber) && filter.HasValue) {
+                if (!string.IsNullOrEmpty(caseNumber) && filter.HasValue)
                     url = "/" + filter.Value.ToString().ToLower() + "/" +
                           caseNumber + "/" + limit;
-                }
 
                 if (!string.IsNullOrEmpty(caseNumber) && status.HasValue) {
                     url = "/" + status.Value.ToString().ToLower() + "/" +
@@ -99,12 +94,12 @@ namespace TestV4 {
             return result;
         }
 
-
         /// <summary>
-        /// Gets the last open cases for this inquirer organization
+        ///     Gets the last open cases for this inquirer organization
         /// </summary>
         /// <returns></returns>
-        private async Task<List<InquirerCase>> GetMyOrganizationsInquiries(StatusType status) {
+        private async Task<List<InquirerCase>> GetMyOrganizationsInquiries(
+            StatusType status) {
             List<InquirerCase> result;
 
             using (var client = new HttpClient()) {
@@ -114,13 +109,13 @@ namespace TestV4 {
                 //Configure request
                 client.BaseAddress = new Uri(GlobalSettings.Path);
                 client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Add("X-Auth-Token", _context.Token);
+                client.DefaultRequestHeaders.Add("X-Auth-Token",
+                    _context.Token);
 
                 // HTTP GET
                 //"organization/{orgid:guid}/inquirercase/{status}/before/{casenr}/{limit:int?}", caseNumber));
-                var response = await client
-                    .GetAsync(string.Format("organization/{0}/inquirercase/{1}", 
-                                            _context.OrganizationId, status));
+                var response = await client.GetAsync(string.Format("organization/{0}/inquirercase/{1}",
+                    _context.OrganizationId, status));
                 result = response.IsSuccessStatusCode
                     ? JsonUtils<List<InquirerCase>>.Deserialize(
                         response.Content.ReadAsStringAsync().Result)
@@ -129,9 +124,8 @@ namespace TestV4 {
             return result;
         }
 
-
         /// <summary>
-        /// Check if there's any ubl contact information for the case recipient.
+        ///     Check if there's any ubl contact information for the case recipient.
         /// </summary>
         /// <param name="caseNumber"></param>
         /// <param name="recipientId"></param>
@@ -146,12 +140,7 @@ namespace TestV4 {
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Add("X-Auth-Token", _context.Token);
 
-                var uri =
-                    string.Format(
-                        "inquirercase/{0}/caserecipient/{1}/ublinformation",
-                        caseNumber,
-                        recipientId);
-
+                var uri = string.Format("inquirercase/{0}/caserecipient/{1}/ublinformation", caseNumber, recipientId);
                 var response = await client.GetAsync(uri);
 
                 return response.IsSuccessStatusCode
@@ -161,9 +150,8 @@ namespace TestV4 {
             }
         }
 
-
         /// <summary>
-        /// Gets an inquirer case by case number.
+        ///     Gets an inquirer case by case number.
         /// </summary>
         /// <returns>InquirerCase</returns>
         public static async Task<InquirerCase> GetInquirerCaseByNumber(string caseNumber, string token) {
@@ -179,25 +167,23 @@ namespace TestV4 {
                 client.DefaultRequestHeaders.Add("X-Auth-Token", token);
 
                 // HTTP GET
-                var response = await client
-                    .GetAsync(string.Format("inquirercase/{0}", caseNumber));
+                var response = await client.GetAsync(string.Format("inquirercase/{0}", caseNumber));
                 result = response.IsSuccessStatusCode
-                    ? JsonUtils<InquirerCase>.Deserialize(
-                        response.Content.ReadAsStringAsync().Result)
+                    ? JsonUtils<InquirerCase>.Deserialize(response.Content.ReadAsStringAsync().Result)
                     : null;
             }
             return result;
         }
 
         /// <summary>
-        /// Gets an inquirer case by case number.
+        ///     Gets an inquirer case by case number.
         /// </summary>
         /// <returns>InquirerCase</returns>
-        private async Task<byte[]> GetInquirerCaseByNumberAsPdf(
-            string caseNumber = "") {
+        private async Task<byte[]> GetInquirerCaseByNumberAsPdf(string caseNumber = "") {
             //Use default if case number is not provided
-            if (string.IsNullOrWhiteSpace(caseNumber))
+            if (string.IsNullOrWhiteSpace(caseNumber)) {
                 caseNumber = CaseNumber;
+            }
 
             byte[] bytes;
             using (var client = new HttpClient()) {
@@ -210,20 +196,16 @@ namespace TestV4 {
                 client.DefaultRequestHeaders.Add("X-Auth-Token", _context.Token);
 
                 // HTTP GET
-                var response = await client
-                    .GetAsync(string.Format("inquirercase/{0}/pdf", caseNumber));
-                bytes = response.IsSuccessStatusCode
-                    ? await response.Content.ReadAsByteArrayAsync()
-                    : null;
+                var response = await client.GetAsync(string.Format("inquirercase/{0}/pdf", caseNumber));
+                bytes = response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : null;
             }
             return bytes;
         }
 
         /// <summary>
-        /// Posts a cancellation on the case
+        ///     Posts a cancellation on the case
         /// </summary>
-        private async Task<bool> PostCancelCase(CancelCase cancelCase,
-            string caseNumber = "") {
+        private async Task<bool> PostCancelCase(CancelCase cancelCase, string caseNumber = "") {
             bool result;
 
             //Use default if case number is not provided
@@ -238,23 +220,17 @@ namespace TestV4 {
                 client.BaseAddress = new Uri(GlobalSettings.Path);
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Add("X-Auth-Token", _context.Token);
-                client.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 // Configure request body
                 var jsonString = JsonUtils<CancelCase>.Serialize(cancelCase);
                 var stringContent = new StringContent(jsonString);
-                stringContent.Headers.ContentType =
-                    new MediaTypeHeaderValue("application/json");
+                stringContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                 // HTTP POST
-                var response = await
-                    client.PostAsync(
-                        string.Format("inquirercase/{0}/cancel", caseNumber),
-                        stringContent);
-
+                var response =
+                    await client.PostAsync(string.Format("inquirercase/{0}/cancel", caseNumber), stringContent);
                 result = response.IsSuccessStatusCode;
-
             }
             return result;
         }
@@ -272,31 +248,30 @@ namespace TestV4 {
             };
         }
 
-        private CloseCase GetClosingCase(
-            InquirerCaseRecipient recipient, string comment) {
+        private CloseCase GetClosingCase(InquirerCaseRecipient recipient, string comment) {
             return new CloseCase {
-                    ClosingComments = new [] { new ClosingCaseCommentToRecipient {
-                    AreaType = Constants.AreaType.AFFECTED.ToString(),
-                    Comment = "Här är en första kommentar!",
-                    RecipientId = recipient.Recipient.Id
-                }, 
+                ClosingComments = new[] {
+                    new ClosingCaseCommentToRecipient {
+                        AreaType = Constants.AreaType.AFFECTED.ToString(),
+                        Comment = comment ?? "Här är en första kommentar!",
+                        RecipientId = recipient.Recipient.Id
+                    }
                 }
             };
         }
 
-
         /// <summary>
-        /// Gets a list of Inquiry Case Recipinents for which the inquirer can do confirmations
+        ///     Gets a list of Inquiry Case Recipinents for which the inquirer can do confirmations
         /// </summary>
         /// <param name="status">toconfirm</param>
         /// <param name="caseNumber">Case number to use(optional)</param>
         /// <returns>List of Inquiry Case Recipinents</returns>
         private async Task<List<InquirerCaseRecipient>>
             GetInquirerCaseRepliesToConfirm(string status, string caseNumber = "") {
-
             //Use default if case number is not provided
-            if (string.IsNullOrWhiteSpace(caseNumber))
+            if (string.IsNullOrWhiteSpace(caseNumber)) {
                 caseNumber = CaseNumber;
+            }
 
             List<InquirerCaseRecipient> result;
             using (var client = new HttpClient()) {
@@ -309,11 +284,8 @@ namespace TestV4 {
                 client.DefaultRequestHeaders.Add("X-Auth-Token", _context.Token);
 
                 // HTTP GET
-                var response = await client
-                    .GetAsync(
-                        string.Format("inquirercase/{0}/caserecipient/{1}",
-                            caseNumber,
-                            status));
+                var response =
+                    await client.GetAsync(string.Format("inquirercase/{0}/caserecipient/{1}", caseNumber, status));
                 result = response.IsSuccessStatusCode
                     ? JsonUtils<List<InquirerCaseRecipient>>.Deserialize(
                         response.Content.ReadAsStringAsync().Result)
@@ -323,8 +295,8 @@ namespace TestV4 {
         }
 
         /// <summary>
-        /// Post method for the inquirer to confirm/accept the answer given by a representative of an organization
-        /// This method should be called after the organization has given their final answer.
+        ///     Post method for the inquirer to confirm/accept the answer given by a representative of an organization
+        ///     This method should be called after the organization has given their final answer.
         /// </summary>
         private async Task<bool> PostInquirerCaseConfirmation(string caseNumber, string recipientId) {
             bool result;
@@ -337,12 +309,9 @@ namespace TestV4 {
                 client.DefaultRequestHeaders.Add("X-Auth-Token", _context.Token);
 
                 // HTTP POST
-                var response = await
-                        client.PostAsync(
-                            string.Format("inquirercase/{0}/caserecipient/{1}/confirm",
-                                caseNumber,
-                                recipientId),
-                            new StringContent(""));
+                var response = await client.PostAsync(
+                    string.Format("inquirercase/{0}/caserecipient/{1}/confirm", caseNumber, recipientId),
+                    new StringContent(""));
 
                 result = response.IsSuccessStatusCode;
             }
@@ -350,8 +319,8 @@ namespace TestV4 {
         }
 
         /// <summary>
-        /// Post method for the inquirer to close the case. 
-        /// This should be called once the inquirer has accepted all the answers from the involved organizations.
+        ///     Post method for the inquirer to close the case.
+        ///     This should be called once the inquirer has accepted all the answers from the involved organizations.
         /// </summary>
         private async Task<bool> PostInquirerCaseClosing(string caseNumber, CloseCase closingComments = null) {
             bool result;
@@ -364,25 +333,46 @@ namespace TestV4 {
                 client.DefaultRequestHeaders.Add("X-Auth-Token", _context.Token);
 
                 // check parsing of json, might fail on null.
-                var jsonString =
-                    JsonUtils<CloseCase>.Serialize(
-                        closingComments);
+                var jsonString = JsonUtils<CloseCase>.Serialize(closingComments);
 
                 var stringContent = new StringContent(jsonString);
-                stringContent.Headers.ContentType =
-                    new MediaTypeHeaderValue("application/json");
+                stringContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                 // HTTP POST
                 var response =
-                    await client.PostAsync(
-                            string.Format(
-                                "inquirercase/{0}/close",
-                                caseNumber),
-                            stringContent);
+                    await client.PostAsync(string.Format("inquirercase/{0}/close", caseNumber), stringContent);
 
                 result = response.IsSuccessStatusCode;
             }
             return result;
+        }
+
+        /// <summary>
+        ///     Basic checking of InquirerCase
+        /// </summary>
+        private void ChecksForInquirerCase(InquirerCase inquirerCase) {
+            Assert.IsNotNullOrEmpty(inquirerCase.Id, "Inquirer case has no Id.");
+            Assert.IsNotNull(inquirerCase.Inquirer, "No inquirer for this inquirer case");
+            Assert.IsNotNullOrEmpty(inquirerCase.Inquirer.Id, "Inquirer has no Id for this inquirer case.");
+        }
+
+        /// <summary>
+        ///     Loops through a list of inquirer case recipients and performs basic checking
+        /// </summary>
+        private void ChecksForInquirerCaseRecipients(List<InquirerCaseRecipient> recipientList) {
+            Assert.Greater(recipientList.Count, 0);
+            foreach (var r in recipientList) ChecksForInquirerCaseRecipient(r);
+        }
+
+        /// <summary>
+        ///     Basic checking of InquirerCaseRecipient
+        /// </summary>
+        private void ChecksForInquirerCaseRecipient(InquirerCaseRecipient inquirerCaseRecipient) {
+            Assert.IsNotNull(inquirerCaseRecipient.Organization, "No organization for this inquirer case.");
+            Assert.IsNotNullOrEmpty(inquirerCaseRecipient.Organization.Id,
+                "Organization has no Id for this inquirer case.");
+            Assert.IsNotNull(inquirerCaseRecipient.Recipient, "No recipients for this inquirer case.");
+            Assert.IsNotNullOrEmpty(inquirerCaseRecipient.Recipient.Id, "Recipient has no Id for this inquirer case.");
         }
 
         [Test]
@@ -392,6 +382,24 @@ namespace TestV4 {
             Assert.IsNotNull(task.Result);
 
             ChecksForInquirerCase(task.Result);
+        }
+
+        [Test]
+        public void GetInquirerCase_ForOrganization() {
+            const StatusType caseStatus = StatusType.Open;
+            //Get open case
+            var orgCases = GetMyOrganizationsInquiries(caseStatus).Result;
+            var lastCase = orgCases.Last();
+            var myCases = GetMyInquiries(caseStatus, ResultType.After, lastCase.Id).Result;
+
+            // myCases should be contained within the organization cases
+            Assert.That(myCases.Count, Is.LessThanOrEqualTo(orgCases.Count));
+
+            var organizationIds = orgCases.Select(c => c.Id).ToList();
+            var inquiryIds = myCases.Select(c => c.Id).ToList();
+            foreach (var id in inquiryIds) {
+                Assert.That(organizationIds.Contains(id), Is.True, "Case not in the list: " + id);
+            }
         }
 
         [Test]
@@ -407,26 +415,19 @@ namespace TestV4 {
             //There is no easy way to check if this is valid pdf document so we will do basic check. 
             //If this is PDF document, in first line it should have PDF version specification.
             //http://stackoverflow.com/questions/3108201/detect-if-pdf-file-is-correct-header-pdf
-            var result =
-                Encoding.UTF8.GetString(
-                    task.Result.Take(7).ToArray());
+            var result = Encoding.UTF8.GetString(task.Result.Take(7).ToArray());
             Assert.IsTrue(result == "%PDF-1.");
 
             //Save file as requested in ticket comment
-            using (
-                var sourceStream =
-                    new FileStream(CaseNumber + ".pdf",
-                        FileMode.Append,
-                        FileAccess.Write)) {
+            using (var sourceStream = new FileStream(CaseNumber + ".pdf", FileMode.Append, FileAccess.Write)) {
                 sourceStream.WriteAsync(task.Result, 0, task.Result.Length);
             }
         }
 
         [Test]
         public void GetInquirerCaseReplies() {
-
             // Status toconfirm -> recipinents for which the inquirer can do confirmations
-            string status = EnumUtils.ToDescription(Constants.Case_Status.TO_CONFIRM);
+            var status = EnumUtils.ToDescription(Constants.Case_Status.TO_CONFIRM);
 
             var task = GetInquirerCaseRepliesToConfirm(status);
             Assert.IsNotNull(task);
@@ -436,11 +437,107 @@ namespace TestV4 {
             if (task.Result.Any()) {
                 ChecksForInquirerCaseRecipients(task.Result);
             }
+        }
 
+        [Test]
+        public void PostInquirerCancelCase_Test() {
+            //Get open case
+            var openCase = GetMyInquiries().Result.FirstOrDefault();
+
+            Assert.IsNotNull(openCase);
+            Assert.IsNotNullOrEmpty(openCase.Type, "Case has no type.");
+
+            // Create CancelCase object
+            var cancelCase = GetCancelCase(openCase);
+
+            var postCancelCaseTask = PostCancelCase(cancelCase, openCase.Id);
+            Assert.IsNotNull(postCancelCaseTask);
+            Assert.IsNotNull(postCancelCaseTask.Result);
+            Assert.IsTrue(postCancelCaseTask.Result);
         }
 
         /// <summary>
-        /// As an inquirer, you can only confirm once the answers given by the cable owners.
+        ///     Note that we cannot (always) make certain that this test case succeeds due to it requiring
+        ///     cases in a certain state (and we don't want to automate the creation of the ideal testing case)
+        /// </summary>
+        [Test]
+        public void PostInquirerCaseClose() {
+            // Make sure we're fetching a cable inquiry
+            var openCase = GetMyOrganizationsInquiries(StatusType.Open).Result.Last();
+
+            // Check if case is eligible to be closed due to passing the thirty day limit.
+            var eligibleCase = (Convert.ToDateTime(openCase.Created) - DateTime.Now).TotalDays < 30;
+
+            // Not sure if we should split these, so that we can have a backup case?
+            // Or what we should do in case we cant find an eligible case?
+            Assert.IsTrue(eligibleCase, "Cant find a case eligible for closing with comments (Less than 30 days old)");
+
+            // Get the first recipient from either interested or involved.
+            var recipient = openCase.InvolvedRecipients.FirstOrDefault() ??
+                            openCase.InterestedRecipients.FirstOrDefault();
+
+            // Generate some comments!
+            var listOfClosedCaseComments = GetClosingCase(recipient, Constants.CLOSING_CASE_COMMENT);
+
+            var closedOrCanceledCases = GetMyInquiries(StatusType.Canceled).Result;
+            var canceledCase = closedOrCanceledCases.FirstOrDefault();
+
+            //Try to close closed or canceled case
+            if (canceledCase != null) {
+                // Need to get separate comments for the recipient of the canceled case.
+                var listOfCanceledCaseComments = new CloseCase {
+                    ClosingComments = new[] {new ClosingCaseCommentToRecipient()}
+                };
+
+                var task = PostInquirerCaseClosing(canceledCase.Id, listOfCanceledCaseComments);
+                Assert.IsNotNull(task);
+                Assert.IsNotNull(task.Result);
+
+                //Result should be unsuccessful
+                Assert.IsFalse(task.Result);
+            }
+
+            // Close open case
+            if (openCase != null) {
+                var recipientsLeftToConfirm = new List<InquirerCaseRecipient>();
+
+                if (openCase.InvolvedRecipients.Any()) {
+                    // Cannot get any replies to confirm unless the case has any?
+                    var taskCofirmed =
+                        GetInquirerCaseRepliesToConfirm(EnumUtils.ToDescription(Constants.Case_Status.TO_CONFIRM),
+                            openCase.Id);
+                    Assert.IsNotNull(taskCofirmed);
+                    Assert.IsNotNull(taskCofirmed.Result);
+                    recipientsLeftToConfirm = taskCofirmed.Result;
+                }
+
+                if (recipientsLeftToConfirm != null &&
+                    recipientsLeftToConfirm.Any()
+                    || !openCase.InvolvedRecipients.TrueForAll(ir =>
+                        ir.Confirmed)) {
+                    // you can not close this case
+                    // can not do anything nothing more
+                } else {
+                    // woohoo, you can close this case.
+
+                    var task = PostInquirerCaseClosing(openCase.Id, listOfClosedCaseComments);
+                    Assert.IsNotNull(task);
+                    Assert.IsNotNull(task.Result);
+
+                    //Result should be successful
+                    Assert.IsTrue(task.Result);
+
+                    //Get case and check if it's closed
+                    var inquirerCaseTask = GetInquirerCaseByNumber(openCase.Id, _context.Token);
+                    Assert.IsNotNull(inquirerCaseTask);
+                    Assert.IsNotNull(inquirerCaseTask.Result);
+                    Assert.That(inquirerCaseTask.Result.Status.ToLower(), Is.EqualTo("closed"));
+                }
+            }
+        }
+
+        /// <summary>
+        ///     As an inquirer, you can only confirm once the answers given by the cable owners.
         /// </summary>
         [Test]
         public void PostInquirerCaseConfirm() {
@@ -463,8 +560,7 @@ namespace TestV4 {
                 // There are no answers to confirm
                 // Then I will confirm an answer which has already been confirmed 
                 // and I will not be able to do it. The answer should be false
-                var caseRecipient = inqCase.InvolvedRecipients.FirstOrDefault() ??
-                                    inqCase.InterestedRecipients.First();
+                var caseRecipient = inqCase.InvolvedRecipients.FirstOrDefault() ?? inqCase.InterestedRecipients.First();
                 var task = PostInquirerCaseConfirmation(inqCase.Id, caseRecipient.Recipient.Id);
 
                 Assert.IsNotNull(task);
@@ -474,216 +570,51 @@ namespace TestV4 {
         }
 
         /// <summary>
-        /// This test tries to get ubl information of two recipents, one that applies UBL and one which doesn't. 
-        /// The recipients get selected from two random cases. 
-        /// If the recipients in the case has ubl applied on this case, the GetUblInformation endpoint should return
-        /// the information provided.
+        ///     This test tries to get ubl information of two recipents, one that applies UBL and one which doesn't.
+        ///     The recipients get selected from two random cases.
+        ///     If the recipients in the case has ubl applied on this case, the GetUblInformation endpoint should return
+        ///     the information provided.
         /// </summary>
         [Test]
         public void TestUblInformation() {
-
             //get a random open cases and try to pick one that applies to ubl and one that doesn't.
             var openCases = GetMyOrganizationsInquiries(StatusType.Open).Result;
-            var openCasesWithUbl = openCases.Where(c => (c.Type == Constants.COLLABORATION_INQUIRY_PURPOSE) && c.CollaborationInquiry.PublishableUnderUbl);
-            var openCasesWithoutUbl = openCases.Where(c => (c.Type == Constants.COLLABORATION_INQUIRY_PURPOSE) && !c.CollaborationInquiry.PublishableUnderUbl);
+            var openCasesWithUbl = openCases.Where(c =>
+                c.Type == Constants.COLLABORATION_INQUIRY_PURPOSE && c.CollaborationInquiry.PublishableUnderUbl);
+            var openCasesWithoutUbl = openCases.Where(c =>
+                c.Type == Constants.COLLABORATION_INQUIRY_PURPOSE && !c.CollaborationInquiry.PublishableUnderUbl);
 
             //for a case that should contain ubl information
             if (openCasesWithUbl.Any()) {
                 var caze = openCasesWithUbl.First();
-                foreach (var recipient in caze.InterestedRecipients) {
-                   if (recipient.AppliesUbl) {
-                       Assert.IsNotNull(GetUblInformation(caze.Id,
-                                               recipient.Recipient.Id).Result);
-                   } else {
-                       // Doing this so in case it fails, we know which organization is the one that is causing this test to fail.
-                       var ublInfo = GetUblInformation(caze.Id, recipient.Recipient.Id).Result;
-                       var errMsg = "Got info: ";
-                       if (ublInfo != null) {
-                           errMsg = "Got info: " + ublInfo.OrganizationName +
+                foreach (var recipient in caze.InterestedRecipients)
+                    if (recipient.AppliesUbl) {
+                        Assert.IsNotNull(GetUblInformation(caze.Id, recipient.Recipient.Id).Result);
+                    } else {
+                        // Doing this so in case it fails, we know which organization is the one that is causing this test to fail.
+                        var ublInfo = GetUblInformation(caze.Id, recipient.Recipient.Id).Result;
+                        var errMsg = "Got info: ";
+                        if (ublInfo != null) {
+                            errMsg = "Got info: " + ublInfo.OrganizationName +
                                      ublInfo.ApplicationComment;
-                       }
-                       Assert.IsNull(ublInfo, errMsg);
-                   }
-                }
+                        }
+                        Assert.IsNull(ublInfo, errMsg);
+                    }
             }
 
             //for a case that shouldn't contain ubl information
             if (openCasesWithoutUbl.Any()) {
                 var caze = openCasesWithoutUbl.First();
-                foreach (var recipient in caze.InterestedRecipients) {
+                foreach (var recipient in caze.InterestedRecipients)
                     if (recipient.AppliesUbl) {
-                        Assert.Fail(string.Format("This fails as Ubl applies for organizaiton {0} and in this test no organizations should have ubl", 
-                            recipient.Organization.Name));
+                        Assert.Fail(
+                            "This fails as Ubl applies for organizaiton {0} and in this test no organizations should have ubl",
+                            recipient.Organization.Name);
                     } else {
                         Assert.IsNull(GetUblInformation(caze.Id,
-                                                recipient.Recipient.Id).Result);
+                            recipient.Recipient.Id).Result);
                     }
-                }
             }
         }
-
-        /// <summary>
-        /// Note that we cannot (always) make certain that this test case succeeds due to it requiring 
-        /// cases in a certain state (and we don't want to automate the creation of the ideal testing case)
-        /// </summary>
-        [Test]
-        public void PostInquirerCaseClose() {
-
-            // Make sure we're fetching a cable inquiry
-            var openCase =
-                GetMyOrganizationsInquiries(StatusType.Open).Result.Last();
-
-            // Check if case is eligible to be closed due to passing the thirty day limit.
-            bool eligibleCase =
-                (Convert.ToDateTime(openCase.Created) - DateTime.Now).TotalDays < 30;
-
-            // Not sure if we should split these, so that we can have a backup case?
-            // Or what we should do in case we cant find an eligible case?
-            Assert.IsTrue(eligibleCase, "Cant find a case eligible for closing with comments (Less than 30 days old)");
-            
-            // Get the first recipient from either interested or involved.
-            var recipient =
-                openCase.InvolvedRecipients.FirstOrDefault() ??
-                openCase.InterestedRecipients.FirstOrDefault();
-
-            // Generate some comments!
-            var listOfClosedCaseComments = GetClosingCase(recipient, Constants.CLOSING_CASE_COMMENT);
-
-            var closedOrCanceledCases = GetMyInquiries(StatusType.Canceled).Result;
-            var canceledCase = closedOrCanceledCases.FirstOrDefault();
-
-            //Try to close closed or canceled case
-            if (canceledCase != null) {
-
-                // Need to get separate comments for the recipient of the canceled case.
-                var listOfCanceledCaseComments = new CloseCase() {
-                    ClosingComments = new [] { new ClosingCaseCommentToRecipient() }
-                };
-
-                var task = PostInquirerCaseClosing(canceledCase.Id, listOfCanceledCaseComments);
-                Assert.IsNotNull(task);
-                Assert.IsNotNull(task.Result);
-
-                //Result should be unsuccessful
-                Assert.IsFalse(task.Result);
-            }
-
-            // Close open case
-            if (openCase != null) {
-
-                var recipientsLeftToConfirm = new List<InquirerCaseRecipient>();
-
-                if (openCase.InvolvedRecipients.Any()) {
-
-                    // Cannot get any replies to confirm unless the case has any?
-                    var taskCofirmed = GetInquirerCaseRepliesToConfirm(
-                                        EnumUtils.ToDescription(Constants.Case_Status.TO_CONFIRM),
-                                        openCase.Id);
-                    Assert.IsNotNull(taskCofirmed);
-                    Assert.IsNotNull(taskCofirmed.Result);
-                    recipientsLeftToConfirm = taskCofirmed.Result;
-                }
-                
-                if ((recipientsLeftToConfirm != null && recipientsLeftToConfirm.Any())
-                    || !openCase.InvolvedRecipients.TrueForAll(ir => ir.Confirmed)) {
-                    // you can not close this case
-                    // can not do anything nothing more
-                } else {
-                    // woohoo, you can close this case.
-
-                    var task = PostInquirerCaseClosing(openCase.Id, listOfClosedCaseComments);
-                    Assert.IsNotNull(task);
-                    Assert.IsNotNull(task.Result);
-
-                    //Result should be successful
-                    Assert.IsTrue(task.Result);
-
-                    //Get case and check if it's closed
-                    var inquirerCaseTask = GetInquirerCaseByNumber(openCase.Id, _context.Token);
-                    Assert.IsNotNull(inquirerCaseTask);
-                    Assert.IsNotNull(inquirerCaseTask.Result);
-                    Assert.That(inquirerCaseTask.Result.Status.ToLower(), Is.EqualTo("closed"));
-                }
-            }
-
-        }
-
-        [Test]
-        public void PostInquirerCancelCase_Test() {
-
-            //Get open case
-            var openCase = GetMyInquiries().Result.FirstOrDefault();
-
-            Assert.IsNotNull(openCase);
-            Assert.IsNotNullOrEmpty(openCase.Type, "Case has no type.");
-
-            // Create CancelCase object
-            var cancelCase = GetCancelCase(openCase);
-
-            var postCancelCaseTask = PostCancelCase(cancelCase, openCase.Id);
-            Assert.IsNotNull(postCancelCaseTask);
-            Assert.IsNotNull(postCancelCaseTask.Result);
-            Assert.IsTrue(postCancelCaseTask.Result);
-        }
-
-        [Test]
-        public void GetInquirerCase_ForOrganization() {
-
-            const StatusType caseStatus = StatusType.Open;
-            //Get open case
-            var orgCases = GetMyOrganizationsInquiries(caseStatus).Result;
-
-            var lastCase = orgCases.Last();
-
-            var myCases = GetMyInquiries(caseStatus, ResultType.After, lastCase.Id).Result;
-
-            // myCases should be contained within the organization cases
-            Assert.That(myCases.Count, Is.LessThanOrEqualTo(orgCases.Count));
-
-            var organizationIds = orgCases.Select(c => c.Id).ToList();
-            var inquiryIds = myCases.Select(c => c.Id).ToList();
-            foreach (var id in inquiryIds) {
-                Assert.That(organizationIds.Contains(id), Is.True, 
-                        "Case not in the list: " + id);
-            }
-
-        }
-
-        /// <summary>
-        /// Basic checking of InquirerCase
-        /// </summary>
-        private void ChecksForInquirerCase(InquirerCase inquirerCase) {
-            Assert.IsNotNullOrEmpty(inquirerCase.Id, "Inquirer case has no Id.");
-            Assert.IsNotNull(inquirerCase.Inquirer, "No inquirer for this inquirer case");
-            Assert.IsNotNullOrEmpty(inquirerCase.Inquirer.Id, "Inquirer has no Id for this inquirer case.");
-        }
-
-
-        /// <summary>
-        /// Loops through a list of inquirer case recipients and performs basic checking
-        /// </summary>
-        private void ChecksForInquirerCaseRecipients(
-            List<InquirerCaseRecipient> recipientList) {
-            Assert.Greater(recipientList.Count, 0);
-            foreach (var r in recipientList) {
-                ChecksForInquirerCaseRecipient(r);
-            }
-        }
-
-        /// <summary>
-        /// Basic checking of InquirerCaseRecipient
-        /// </summary>
-        private void ChecksForInquirerCaseRecipient(
-            InquirerCaseRecipient inquirerCaseRecipient) {
-            Assert.IsNotNull(inquirerCaseRecipient.Organization,
-                "No organization for this inquirer case.");
-            Assert.IsNotNullOrEmpty(inquirerCaseRecipient.Organization.Id,
-                "Organization has no Id for this inquirer case.");
-            Assert.IsNotNull(inquirerCaseRecipient.Recipient,
-                "No recipients for this inquirer case.");
-            Assert.IsNotNullOrEmpty(inquirerCaseRecipient.Recipient.Id,
-                "Recipient has no Id for this inquirer case.");
-        }
-
     }
 }

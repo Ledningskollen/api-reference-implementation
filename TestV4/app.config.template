@@ -2,7 +2,7 @@
 <configuration>
 
     <appSettings file="appSettings.config">
-        <add key="Host" value="http://localhost/ella" />
+        <add key="Host" value="https://test.ledningskollen.se/api" />
         <add key="ApiBase" value="api" />
         <add key="Version" value="v4" />
         <add key="UserName_Inq" value="*" />

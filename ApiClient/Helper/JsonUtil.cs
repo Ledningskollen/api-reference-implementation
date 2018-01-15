@@ -56,19 +56,17 @@ namespace ApiClient.Helper {
             try {
                 byte[] buffer = Encoding.UTF8.GetBytes(json);
                 stream = new MemoryStream(buffer, 0, buffer.Length);
-                
+
                 if (!isResponseSuccess) {
                     var serializer =
-                        new DataContractJsonSerializer(typeof (ErrorMessage), Settings);
+                        new DataContractJsonSerializer(typeof(ErrorMessage), Settings);
                     var em = (ErrorMessage) serializer.ReadObject(stream);
                     throw new JsonException(em.Message);
-
                 } else {
                     var serializer =
-                        new DataContractJsonSerializer(typeof (T), Settings);
+                        new DataContractJsonSerializer(typeof(T), Settings);
                     result = (T) serializer.ReadObject(stream);
                 }
-
             } finally {
                 if (stream != null) {
                     stream.Dispose();
