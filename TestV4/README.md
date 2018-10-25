@@ -10,7 +10,3 @@ which is where the App.config will end up.
 If you are developing, you should use the Debug configuration.
 So to set up your test endpoint, you should copy appSettings.Debug.config.template
 to appSettings.Debug.config and change the **Host** value to your liking.
-
-The appSettings.Integration.config is used by an integration test setup at
-kar-dev4 which is managed by Teamcity. It's a little bit of a complicated setup,
-so please, don't mess about with it unless you know what you are doing.
